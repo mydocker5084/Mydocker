@@ -1,0 +1,188 @@
+dotnet new mvc --auth none
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MyMVC.Models;
+namespace MyMVC.Controllers
+{ public class HomeController : Controller
+{
+public String Index()
+{ return "Hello World"; }
+}
+}
+55084
+Go to models folder and add new file StockQuote.cs to it with following content
+using System;
+namespace MyMVC.Models
+{
+public class StockQuote
+{ public string Symbol {get;set;}
+public int Price{get;set;}
+}
+}
+6)Now Add View to folder then home folder in it and modify index.cshtml file to match following
+@{
+ViewData["Title"] = "Home Page";
+}
+<div>
+Symbol: @Model.Symbol <br/>
+Price: $@Model.Price <br/>
+</div>
+7)Now modify HomeController.cs file to match following:
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MyMVC.Models;
+namespace MyMVC.Controllers
+{
+public class HomeController : Controller
+{ public async Task <IActionResult> Index()
+{
+var model= new StockQuote{ Symbol='HLLO', Price=3200};
+return View(model);
+}
+}
+}
+5084/2
+a. Download and install
+To start building .NET apps you just need to download and install the .NET SDK (Software Development Kit version
+3.0 above).
+Link:
+https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial/install
+b. Check everything installed correctly
+Once you've installed, open a new command prompt and run the following command:
+Command prompt
+> dotnet
+Create your web API
+1. Open two command prompts
+Command prompt 1:
+Command:
+dotnet new webapi -o Glossary
+output:
+
+Command:
+cd Glossary
+dotnet run
+
+
+2. Command Prompt 2: (try running ready made weatherforecast class for testing)
+Command:
+curl --insecure https://localhost:5001/weatherforecast
+output:
+
+3. Now Change the content:
+To get started, remove the WeatherForecast.cs file from the root of the project and the
+WeatherForecastController.cs file from the Controllers folder.
+Add Following two files
+1) D:\Glossary\GlossaryItem.cs (type it in notepad and save as all files)
+//GlossaryItem.cs
+namespace Glossary
+{
+public class GlossaryItem
+{
+public string Term { get; set; }
+public string Definition { get; set; }
+}
+}
+2) D:\Glossary\Controllers\ GlossaryController.cs (type it in notepad and save as all files)
+//Controllers/GlossaryController.cs
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using System.IO;
+namespace Glossary.Controllers
+{
+[ApiController]
+[Route("api/[controller]")]
+public class GlossaryController: ControllerBase
+{
+private static List<GlossaryItem> Glossary = new List<GlossaryItem> {
+new GlossaryItem
+{
+Term= "HTML",
+Definition = "Hypertext Markup Language"
+}
+new GlossaryItem
+{
+Term= "MVC",
+Definition = "Model View Controller"
+},
+new GlossaryItem
+{
+Term= "OpenID",
+Definition = "An open standard for authentication"
+}
+};
+
+[HttpGet]
+public ActionResult<List<GlossaryItem>> Get()
+{ return Ok(Glossary);
+}
+[HttpGet]
+[Route("{term}")]
+public ActionResult<GlossaryItem> Get(string term)
+{
+var glossaryItem = Glossary.Find(item =>
+item.Term.Equals(term, StringComparison.InvariantCultureIgnoreCase));
+if (glossaryItem == null)
+{ return NotFound();
+} else
+{
+return Ok(glossaryItem);
+}
+}
+[HttpPost]
+public ActionResult Post(GlossaryItem glossaryItem)
+{
+var existingGlossaryItem = Glossary.Find(item =>
+item.Term.Equals(glossaryItem.Term, StringComparison.InvariantCultureIgnoreCase));
+if (existingGlossaryItem != null)
+{
+return Conflict("Cannot create the term because it already exists.");
+}
+else
+{
+Glossary.Add(glossaryItem);
+var resourceUrl = Path.Combine(Request.Path.ToString(), Uri.EscapeUriString(glossaryItem.Term));
+return Created(resourceUrl, glossaryItem);
+}
+}
+[HttpPut]
+public ActionResult Put(GlossaryItem glossaryItem)
+{
+var existingGlossaryItem = Glossary.Find(item =>
+item.Term.Equals(glossaryItem.Term, StringComparison.InvariantCultureIgnoreCase));
+if (existingGlossaryItem == null)
+{
+return BadRequest("Cannot update a nont existing term.");
+} else
+{
+existingGlossaryItem.Definition = glossaryItem.Definition;
+return Ok();
+}
+}
+[HttpDelete]
+[Route("{term}")]
+public ActionResult Delete(string term)
+{
+var glossaryItem = Glossary.Find(item =>
+item.Term.Equals(term, StringComparison.InvariantCultureIgnoreCase));
+if (glossaryItem == null)
+{ return NotFound();
+}
+else
+{ Glossary.Remove(glossaryItem);
+return NoContent();
+}
+}
+}
+}
